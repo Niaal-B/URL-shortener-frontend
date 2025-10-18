@@ -17,7 +17,7 @@ import {
 const navigationItems = [
   { 
     title: "My Organizations", 
-    url: "/", 
+    url: "/dashboard", 
     icon: Building2,
     description: "Organizations you manage"
   },

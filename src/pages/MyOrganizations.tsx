@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { OrganizationCard } from "@/components/OrganizationCard";
 import { CreateOrganizationForm } from "@/components/CreateOrganizationForm";
+import { fetchAdminOrganizations } from '../api/dashboard';
 
 // Mock data - replace with API calls
 const mockOrganizations = [
@@ -25,11 +26,18 @@ const mockOrganizations = [
 const MyOrganizations = () => {
   const navigate = useNavigate();
   const [organizations, setOrganizations] = useState(mockOrganizations);
+  const [loading, setLoading] = useState(true);
 
-  const handleRefresh = () => {
-    // TODO: Fetch organizations from API
-    console.log("Refreshing organizations...");
+  const handleRefresh = async () => {
+    setLoading(true);
+    const admins = await fetchAdminOrganizations();
+    setOrganizations(admins);
+    setLoading(false);
   };
+
+  useEffect(() => {
+    handleRefresh();
+  }, []);
 
   return (
     <div className="space-y-6">

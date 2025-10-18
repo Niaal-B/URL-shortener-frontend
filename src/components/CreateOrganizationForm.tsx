@@ -1,43 +1,54 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Building2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
-const formSchema = z.object({
-  name: z.string().min(3, "Organization name must be at least 3 characters").max(100),
-});
 
 interface CreateOrganizationFormProps {
   onSuccess: () => void;
 }
 
-export const CreateOrganizationForm = ({ onSuccess }: CreateOrganizationFormProps) => {
+interface FormValues {
+  name: string;
+}
+
+export const CreateOrganizationForm = ({
+  onSuccess,
+}: CreateOrganizationFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+
+  const form = useForm<FormValues>({
     defaultValues: {
       name: "",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
-      // TODO: POST to /api/organizations/
       console.log("Creating organization:", values);
-      
+
       toast({
         title: "Organization created",
         description: `${values.name} has been created successfully.`,
       });
-      
+
       form.reset();
       setIsOpen(false);
       onSuccess();
@@ -52,8 +63,8 @@ export const CreateOrganizationForm = ({ onSuccess }: CreateOrganizationFormProp
 
   if (!isOpen) {
     return (
-      <Button 
-        onClick={() => setIsOpen(true)} 
+      <Button
+        onClick={() => setIsOpen(true)}
         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
         size="lg"
       >
@@ -82,26 +93,39 @@ export const CreateOrganizationForm = ({ onSuccess }: CreateOrganizationFormProp
             <FormField
               control={form.control}
               name="name"
-              render={({ field }) => (
+              rules={{
+                required: "Organization name is required",
+                minLength: {
+                  value: 3,
+                  message: "Organization name must be at least 3 characters",
+                },
+                maxLength: {
+                  value: 100,
+                  message: "Organization name must be under 100 characters",
+                },
+              }}
+              render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>Organization Name</FormLabel>
                   <FormControl>
                     <Input placeholder="My Organization" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  {fieldState.error && (
+                    <FormMessage>{fieldState.error.message}</FormMessage>
+                  )}
                 </FormItem>
               )}
             />
             <div className="flex gap-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Create
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setIsOpen(false);
                   form.reset();
