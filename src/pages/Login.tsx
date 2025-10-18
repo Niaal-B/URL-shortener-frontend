@@ -81,38 +81,50 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
+    setSuccess(false);
+  
     try {
       const response = await fetch(`${API_BASE_URL}/login/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(true);
-        // Store token if remember me is checked
-        if (rememberMe && data.token) {
-          // Note: In production, use secure storage
-          console.log('Token:', data.token);
-        }
-        // Redirect to dashboard after 2 seconds
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 2000);
-      } else {
+  
+      // Check if the API call was successful
+      if (!response.ok || !data.access) {
         setError(data.message || 'Login failed. Please check your credentials.');
+        return;
       }
+  
+      // Store tokens based on "Remember Me"
+        localStorage.setItem('access_token', data.access);
+
+  
+      // Optional: store user info
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+  
+      console.log('Access token stored:', rememberMe ? localStorage.getItem('access_token') : sessionStorage.getItem('access_token'));
+  
+      // Set success state
+      setSuccess(true);
+  
+      // Redirect after short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
+  
     } catch (err) {
+      console.error('Network error:', err);
       setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleRegister = () => {
     window.location.href = '/register';
