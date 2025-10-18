@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/api';
 import OrganizationCard from '../components/OrganizationCard';
 import type { DashboardResponse } from '../types';
+import SidebarLayout from '../layout/SidebarLayout';
 
 export default function DashboardPage() {
   const [userData, setUserData] = useState<DashboardResponse | null>(null);
@@ -15,7 +16,8 @@ export default function DashboardPage() {
   if (!userData) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: '20px' }}>
+    <SidebarLayout>
+<div style={{ padding: '20px' }}>
       <h2>{userData.message}</h2>
       <p>Email: {userData.email}</p>
 
@@ -28,5 +30,8 @@ export default function DashboardPage() {
         ))
       )}
     </div>
+        
+    </SidebarLayout>
+    
   );
 }

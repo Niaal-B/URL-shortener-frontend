@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Organization } from '../types';
+import type { Organization } from '../types';
 
 interface OrgContextType {
   activeOrg: Organization | null;
