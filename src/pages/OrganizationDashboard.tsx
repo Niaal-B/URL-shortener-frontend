@@ -1,10 +1,13 @@
 import { useParams } from "react-router-dom";
 import { Building2, Link as LinkIcon, BarChart3, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CreateShortUrlForm } from "@/components/CreateShortUrlForm";
+import { ShortUrlList } from "@/components/ShortUrlList";
+import { useState } from "react";
 
 const OrganizationDashboard = () => {
   const { slug } = useParams();
-
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   // Mock data - replace with API calls
   const stats = [
     { title: "Total Links", value: "1,284", icon: LinkIcon, color: "text-primary" },
@@ -41,13 +44,13 @@ const OrganizationDashboard = () => {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Short URLs</CardTitle>
+          {slug && <CreateShortUrlForm organizationSlug={slug} />}
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            URL management interface coming soon...
-          </p>
+        {slug && <ShortUrlList organizationSlug={slug} refreshTrigger={refreshTrigger} />}
+
         </CardContent>
       </Card>
     </div>

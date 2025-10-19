@@ -10,6 +10,9 @@ import BulkUpload from "@/pages/BulkUpload";
 import OrganizationDashboard from "@/pages/OrganizationDashboard";
 import MemberOrganizations from "@/pages/MemberOrganizations";
 
+import RedirectHandler from "@/components/RedirectHandler";
+
+
 export const AppRouter = () => (
   <BrowserRouter>
     <Routes>
@@ -19,9 +22,11 @@ export const AppRouter = () => (
     <Route path="/dashboard" element={<DashboardLayout><MyOrganizations /></DashboardLayout>} />
     <Route path="/member-organizations" element={<DashboardLayout><MemberOrganizations /></DashboardLayout>} />
     <Route path="/bulk-upload" element={<DashboardLayout><BulkUpload /></DashboardLayout>} />
-    <Route path="/dashboard/org/:slug" element={<DashboardLayout><OrganizationDashboard /></DashboardLayout>} />
-    <Route path="/member/org/:slug" element={<DashboardLayout><MemberOrganizationView /></DashboardLayout>} />
+    <Route path="/dashboard/:slug" element={<DashboardLayout><OrganizationDashboard /></DashboardLayout>} />
+    <Route path="/member/:slug" element={<DashboardLayout><MemberOrganizationView /></DashboardLayout>} />
     <Route path="/" element={<DashboardLayout><MyOrganizations /></DashboardLayout>} />
+    <Route path="/:orgSlug/:slug" element={<RedirectHandler />} />
+
 
 
 

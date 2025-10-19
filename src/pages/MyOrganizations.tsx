@@ -44,7 +44,7 @@ const MyOrganizations = () => {
             slug={org.slug}
             role={org.role}
             joinDate={org.joinDate}
-            onClick={() => navigate(`/dashboard/org/${org.slug}`)}
+            onClick={() => navigate(`/dashboard/${org.slug}`)}
           />
         ))}
       </div>

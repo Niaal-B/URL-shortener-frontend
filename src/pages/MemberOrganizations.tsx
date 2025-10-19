@@ -1,29 +1,41 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users } from "lucide-react";
 import { OrganizationCard } from "@/components/OrganizationCard";
 
-// Mock data - replace with API calls
-const mockMemberOrganizations = [
-  {
-    id: "3",
-    name: "E-commerce Platform",
-    slug: "ecommerce",
-    role: "EDITOR" as const,
-    joinDate: "Mar 10, 2024",
-  },
-  {
-    id: "4",
-    name: "Content Management",
-    slug: "content-mgmt",
-    role: "VIEWER" as const,
-    joinDate: "Apr 5, 2024",
-  },
-];
+import api from "../api/api"; 
+
+interface Organization {
+  id: number;
+  name: string;
+  slug: string;
+  role: "EDITOR" | "VIEWER";
+  joined_at: string;
+}
+
 
 const MemberOrganizations = () => {
   const navigate = useNavigate();
-  const [organizations] = useState(mockMemberOrganizations);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+
+  useEffect(() => {
+    api.get("/api/organizations/memberships/")
+      .then((res) => {
+        const rawOrgs = res.data.organizations || [];
+        const formatted = rawOrgs.map((org: any) => ({
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          role: org.role.toUpperCase(),
+          joined_at: new Date(org.joined_at).toLocaleDateString(),
+        }));
+        setOrganizations(formatted);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch member organizations:", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="space-y-6">
