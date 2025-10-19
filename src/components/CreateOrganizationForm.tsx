@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { createOrganization } from "@/api/organizations";
+
 
 interface CreateOrganizationFormProps {
   onSuccess: () => void;
@@ -42,17 +44,18 @@ export const CreateOrganizationForm = ({
 
   const onSubmit = async (values: FormValues) => {
     try {
-      console.log("Creating organization:", values);
-
+      const org = await createOrganization(values.name);
+  
       toast({
         title: "Organization created",
-        description: `${values.name} has been created successfully.`,
+        description: `${org.name} has been created successfully.`,
       });
-
+  
       form.reset();
       setIsOpen(false);
-      onSuccess();
+      onSuccess(); // refresh org list
     } catch (error) {
+      console.error("Create org error:", error);
       toast({
         title: "Error",
         description: "Failed to create organization. Please try again.",
@@ -60,7 +63,7 @@ export const CreateOrganizationForm = ({
       });
     }
   };
-
+  
   if (!isOpen) {
     return (
       <Button

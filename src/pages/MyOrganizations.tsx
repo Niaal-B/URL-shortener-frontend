@@ -5,27 +5,10 @@ import { OrganizationCard } from "@/components/OrganizationCard";
 import { CreateOrganizationForm } from "@/components/CreateOrganizationForm";
 import { fetchAdminOrganizations } from '../api/dashboard';
 
-// Mock data - replace with API calls
-const mockOrganizations = [
-  {
-    id: "1",
-    name: "Tech Startup Inc",
-    slug: "tech-startup",
-    role: "ADMIN" as const,
-    joinDate: "Jan 15, 2024",
-  },
-  {
-    id: "2",
-    name: "Marketing Agency",
-    slug: "marketing-agency",
-    role: "ADMIN" as const,
-    joinDate: "Feb 20, 2024",
-  },
-];
 
 const MyOrganizations = () => {
   const navigate = useNavigate();
-  const [organizations, setOrganizations] = useState(mockOrganizations);
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const handleRefresh = async () => {
