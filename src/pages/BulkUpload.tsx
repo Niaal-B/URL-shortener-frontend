@@ -1,171 +1,138 @@
-import { useState } from "react";
-import { Upload, FileSpreadsheet, AlertCircle } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState, useEffect } from "react";
+import { Mail, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { getMyInvitations,acceptInvitation } from "@/api/organizations";
 
-const formSchema = z.object({
-  organizationId: z.string().min(1, "Please select an organization"),
-  file: z.any().refine((file) => file?.length > 0, "Please select a file"),
-});
+interface Invitation {
+  id: number;
+  token: string;
+  organization_name: string;
+  role: string;
+  email: string;
+  status: string;
+  created_at: string;
+}
 
-// Mock organizations - replace with API call
-const mockAdminOrganizations = [
-  { id: "1", name: "Tech Startup Inc" },
-  { id: "2", name: "Marketing Agency" },
-];
-
-const BulkUpload = () => {
+const PendingInvitations = () => {
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [acceptingId, setAcceptingId] = useState<number | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      organizationId: "",
-    },
-  });
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsUploading(true);
-    
+  const fetchInvitations = async () => {
+    setIsLoading(true);
     try {
-      // TODO: POST to /api/bulk-upload/ with file + organization_id
-      console.log("Uploading:", values);
-      
-      toast({
-        title: "Upload successful",
-        description: "Your URLs are being processed.",
-      });
-      
-      form.reset();
-      setSelectedFile(null);
+      const data = await getMyInvitations();
+      setInvitations(data);
     } catch (error) {
       toast({
-        title: "Upload failed",
-        description: "Please try again later.",
+        title: "Error",
+        description: "Failed to fetch invitations",
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      form.setValue("file", e.target.files);
+  const handleAccept = async (token: string, id: number) => {
+    setAcceptingId(id);
+    try {
+      await acceptInvitation(token);
+      toast({
+        title: "Success",
+        description: "Invitation accepted! You've joined the organization.",
+      });
+      fetchInvitations();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to accept invitation",
+        variant: "destructive",
+      });
+    } finally {
+      setAcceptingId(null);
     }
   };
+
+  useEffect(() => {
+    fetchInvitations();
+  }, []);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 rounded-xl bg-accent">
-          <Upload className="h-8 w-8 text-accent-foreground" />
+          <Mail className="h-8 w-8 text-accent-foreground" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Bulk Upload</h1>
-          <p className="text-muted-foreground">Upload CSV or Excel files to create multiple short URLs</p>
+          <h1 className="text-3xl font-bold text-foreground">Pending Invitations</h1>
+          <p className="text-muted-foreground">Review and accept your organization invitations</p>
         </div>
       </div>
 
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Your file should contain columns for the original URL and optionally a custom slug.
-          Maximum 1000 URLs per upload.
-        </AlertDescription>
-      </Alert>
+      {invitations.length === 0 && !isLoading && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            You don't have any pending invitations at the moment.
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Upload File</CardTitle>
-          <CardDescription>
-            Select an organization and upload your CSV or Excel file
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="organizationId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Organization</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an organization" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {mockAdminOrganizations.map((org) => (
-                          <SelectItem key={org.id} value={org.id}>
-                            {org.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="file"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>File</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center gap-4">
-                        <label
-                          htmlFor="file-upload"
-                          className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
-                        >
-                          <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-sm font-medium">Choose File</span>
-                          <input
-                            id="file-upload"
-                            type="file"
-                            accept=".csv,.xlsx,.xls"
-                            className="hidden"
-                            onChange={handleFileChange}
-                          />
-                        </label>
-                        {selectedFile && (
-                          <span className="text-sm text-muted-foreground">{selectedFile.name}</span>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button 
-                type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={isUploading}
-              >
-                {isUploading ? "Uploading..." : "Upload & Create URLs"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="grid gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 bg-muted rounded w-1/3"></div>
+                <div className="h-4 bg-muted rounded w-1/2 mt-2"></div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {invitations.map((invitation) => (
+            <Card key={invitation.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-xl">{invitation.organization_name}</CardTitle>
+                    <CardDescription className="mt-2">
+                      Invited as <Badge variant="secondary">{invitation.role}</Badge>
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleAccept(invitation.token, invitation.id)}
+                      disabled={acceptingId === invitation.id}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {acceptingId === invitation.id ? "Accepting..." : "Accept"}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground">
+                  <p>Email: {invitation.email}</p>
+                  <p className="mt-1">
+                    Received: {new Date(invitation.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default BulkUpload;
+export default PendingInvitations;

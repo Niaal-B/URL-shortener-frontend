@@ -28,7 +28,7 @@ const navigationItems = [
     description: "Organizations you're part of"
   },
   { 
-    title: "Bulk Upload", 
+    title: "invitations", 
     url: "/bulk-upload", 
     icon: Upload,
     description: "Upload multiple URLs",
